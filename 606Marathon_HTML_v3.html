@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jesse's Birthday Marathon</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: #f0f4f8;
+  color: #1a202c;
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #1e6b45 100%);
+  color: white;
+  text-align: center;
+  padding: 50px 24px 42px;
+}
+header h1 {
+  font-size: clamp(1.8em, 5vw, 3.1em);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+header p {
+  font-size: clamp(0.9em, 2.5vw, 1.2em);
+  opacity: 0.82;
+}
+
+/* ── MAP IMAGE ── */
+.map-wrap {
+  max-width: 980px;
+  margin: 28px auto 0;
+  padding: 0 20px;
+}
+.map-crop {
+  height: 165px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 18px rgba(0,0,0,0.13);
+  background: #cbd5e1;
+}
+.map-crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 63%;
+  display: block;
+}
+
+/* ── CARD SHELL ── */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+.section {
+  max-width: 700px;
+  margin: 24px auto;
+  padding: 0 20px;
+}
+.section.wide { max-width: 1080px; }
+
+/* ── BLURB ── */
+.blurb-card {
+  padding: 24px 30px;
+  text-align: center;
+}
+.blurb-card p {
+  font-size: 1.02em;
+  line-height: 1.7;
+  color: #374151;
+}
+.blurb-card strong { color: #1e6b45; }
+
+/* ── SYNC STATUS ── */
+.sync-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.8em;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+.sync-bar.ok   { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.sync-bar.warn { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.sync-bar.demo { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.sync-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── PROGRESS ── */
+.prog-card { padding: 18px 24px; }
+.prog-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88em;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 10px;
+}
+.prog-row span:last-child { color: #1e6b45; font-weight: 700; }
+.prog-track {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1a3a5c, #1e6b45);
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+/* ── CLAIM SECTION ── */
+.claim-card { padding: 24px 28px; }
+.claim-card h3 {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: #1e3a5c;
+  margin-bottom: 4px;
+}
+.claim-sub {
+  font-size: 0.85em;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+.claim-form { display: flex; flex-direction: column; gap: 14px; }
+
+.claim-name-row { display: flex; flex-direction: column; gap: 5px; }
+.claim-name-row label { font-size: 0.75em; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
+.claim-name-row input {
+  padding: 9px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 0.95em;
+  outline: none;
+  max-width: 280px;
+}
+.claim-name-row input:focus { border-color: #1e6b45; }
+
+.claim-range-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.claim-field { display: flex; flex-direction: column; gap: 5px; }
+.claim-field label { font-size: 0.75em; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
+.claim-field input {
+  width: 100px;
+  padding: 9px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 0.95em;
+  outline: none;
+}
+.claim-field input:focus { border-color: #1e6b45; }
+.claim-dash { font-size: 0.9em; color: #94a3b8; padding-bottom: 10px; }
+
+.claim-preview {
+  font-size: 0.88em;
+  color: #94a3b8;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 7px;
+  border: 1px solid #e2e8f0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+.claim-preview.ok      { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight: 600; }
+.claim-preview.warn    { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+.claim-preview.success { background: #f0fdf4; border-color: #4ade80; color: #15803d; font-weight: 700; }
+
+.claim-btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.claim-btn {
+  padding: 11px 28px;
+  background: linear-gradient(135deg, #1a3a5c, #1e6b45);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95em;
+  font-weight: 700;
+  cursor: pointer;
+}
+.claim-btn:hover { opacity: 0.88; }
+.remove-btn {
+  padding: 11px 20px;
+  background: white;
+  color: #dc2626;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 0.88em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.remove-btn:hover { background: #fff1f2; }
+
+/* ── GRID ── */
+.grid-card { padding: 18px 18px 14px; }
+:root { --label-w: 148px; }
+
+.entrance-row {
+  display: flex;
+  padding-left: var(--label-w);
+}
+.entrance-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.65em;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  border-bottom: 1px dashed #e2e8f0;
+  padding-bottom: 5px;
+}
+
+.lm-row {
+  display: flex;
+  padding-left: var(--label-w);
+  margin-bottom: 10px;
+}
+.lm-slot {
+  flex: 1;
+  position: relative;
+  height: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5px;
+  font-size: 0.6em;
+  color: #cbd5e1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: visible;
+}
+.lm-slot.marked { font-size: 0.63em; font-weight: 700; color: #334155; }
+.lm-slot.marked::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 1px; height: 5px;
+  background: #94a3b8;
+}
+
+.lap-row { display: flex; align-items: center; margin-bottom: 3px; }
+
+.row-label {
+  width: var(--label-w);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-right: 10px;
+}
+
+.dir-badge {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05em;
+  font-weight: 900;
+  flex-shrink: 0;
+  border-width: 1.5px;
+  border-style: solid;
+}
+.dir-badge.west { background: #fffbeb; color: #b45309; border-color: #fbbf24; }
+.dir-badge.east { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+
+.row-text { font-size: 0.6em; color: #64748b; font-weight: 600; line-height: 1.3; }
+.row-text .dir-word { display: block; font-size: 1.15em; color: #1e293b; }
+
+/* Cells container — fixed height prevents any row expansion */
+.segs {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  height: 46px;
+  overflow: hidden;
+}
+
+/* Individual segment cell */
+.seg {
+  flex: 1;
+  min-width: 0;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.1s;
+}
+.seg:hover:not(.ghost) { z-index: 5; border-color: #94a3b8; }
+.seg.ghost { background: transparent; border-color: transparent; pointer-events: none; }
+.seg.full-mile { background: #f1f5f9; border-color: #94a3b8; }
+.seg.claimed   { background: #dcfce7; border-color: #4ade80; }
+.seg.mine      { background: #dbeafe; border-color: #60a5fa; }
+
+/* Mile number */
+.seg-mile {
+  font-size: 0.57em;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1;
+  letter-spacing: -0.2px;
+  user-select: none;
+}
+.seg.full-mile .seg-mile { color: #334155; font-weight: 800; font-size: 0.62em; }
+.seg.claimed   .seg-mile { color: #166534; }
+.seg.mine      .seg-mile { color: #1e40af; }
+
+/* Legend */
+.grid-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-left: var(--label-w);
+}
+.legend { display: flex; gap: 14px; flex-wrap: wrap; }
+.leg-item { display: flex; align-items: center; gap: 5px; font-size: 0.77em; color: #555; }
+.leg-dot { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+.grid-note { font-size: 0.72em; color: #aaa; }
+
+/* Loading state */
+#loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 0.9em;
+}
+
+/* ── SETUP BOX ── */
+.setup-wrap {
+  max-width: 700px;
+  margin: 0 auto 24px;
+  padding: 0 20px;
+}
+.setup-box {
+  background: #fffbeb;
+  border: 1px solid #fbbf24;
+  border-radius: 12px;
+  padding: 22px 26px;
+  font-size: 0.88em;
+  color: #78350f;
+  line-height: 1.7;
+}
+.setup-box h4 { font-size: 1em; margin-bottom: 10px; }
+.setup-box ol { padding-left: 20px; }
+.setup-box li { margin-bottom: 6px; }
+.setup-box code {
+  background: #fef3c7;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.95em;
+}
+
+/* ── FOOTER ── */
+footer { text-align: center; padding: 28px; font-size: 0.8em; color: #bbb; }
+
+@media (max-width: 680px) {
+  :root { --label-w: 88px; }
+  .dir-badge { width: 26px; height: 26px; font-size: 0.9em; }
+  .row-text { font-size: 0.52em; }
+  .segs { height: 38px; }
+  .seg-mile { font-size: 0.5em; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>Jesse's Birthday Marathon</h1>
+  <p>Running the 606 for 26(.2) miles on 6/6/26</p>
+</header>
+
+<!-- MAP IMAGE -->
+<div class="map-wrap">
+  <div class="map-crop">
+    <img src="https://www.the606.org/wp-content/uploads/2019/05/Screen-Shot-2019-05-31-at-2.41.58-PM-1600x390.png"
+         alt="The 606 Bloomingdale Trail"
+         onerror="this.closest('.map-wrap').style.display='none'">
+  </div>
+</div>
+
+<!-- BLURB -->
+<div class="section">
+  <div class="card blurb-card">
+    <p>I'm running 26.2 miles on the 606 trail for my birthday on June 6th. My goal: <strong>at least one friend running alongside me for every mile.</strong> Sign up for as many segments as you want below — each one is 0.1 miles and multiple people can share the same segment.</p>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="section">
+  <div class="card prog-card">
+    <div class="prog-row">
+      <span>Friend coverage</span>
+      <span id="prog-text">0 / 26.2 miles (0%)</span>
+    </div>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIM SECTION -->
+<div class="section">
+  <div class="card claim-card">
+    <div id="sync-bar" class="sync-bar demo">
+      <div class="sync-dot"></div>
+      <span id="sync-msg">Connecting...</span>
+    </div>
+    <br>
+    <h3>Claim your miles</h3>
+    <p class="claim-sub">Want to run 5 miles? Enter a range and sign up for all of it at once. Type your name to see your miles highlighted in blue.</p>
+    <div class="claim-form">
+      <div class="claim-name-row">
+        <label>Your name</label>
+        <input type="text" id="claim-name" placeholder="e.g. Jesse" maxlength="30"
+               oninput="updateClaimPreview(); updateHighlights(this.value)">
+      </div>
+      <div class="claim-range-row">
+        <div class="claim-field">
+          <label>From mile</label>
+          <input type="number" id="claim-start" min="0" max="26.2" step="0.1"
+                 placeholder="0.0" oninput="updateClaimPreview()">
+        </div>
+        <span class="claim-dash">to</span>
+        <div class="claim-field">
+          <label>To mile</label>
+          <input type="number" id="claim-end" min="0" max="26.2" step="0.1"
+                 placeholder="5.0" oninput="updateClaimPreview()">
+        </div>
+      </div>
+      <div class="claim-preview" id="claim-preview">Enter your name and a mile range above.</div>
+      <div class="claim-btn-row">
+        <button class="claim-btn" onclick="doClaimRange()">Sign me up</button>
+        <button class="remove-btn" onclick="doRemoveRange()">Remove my sign-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="section wide">
+  <div class="card grid-card">
+    <div class="entrance-row">
+      <div class="entrance-title">Entrance Points</div>
+    </div>
+    <div class="lm-row" id="lm-row"></div>
+    <div id="loading">Connecting to live sign-up data...</div>
+    <div id="grid"></div>
+    <div class="grid-foot">
+      <div class="legend">
+        <div class="leg-item">
+          <div class="leg-dot" style="background:#dbeafe;border:1px solid #60a5fa;"></div>
+          Your miles
+        </div>
+        <div class="leg-item">
+          <div class="leg-dot" style="background:#dcfce7;border:1px solid #4ade80;"></div>
+          Claimed
+        </div>
+        <div class="leg-item">
+          <div class="leg-dot" style="background:#f1f5f9;border:1px solid #94a3b8;"></div>
+          Full mile
+        </div>
+        <div class="leg-item">
+          <div class="leg-dot" style="background:#f8fafc;border:1px solid #e2e8f0;"></div>
+          Open
+        </div>
+      </div>
+      <span class="grid-note">Hover a segment to see who's running it</span>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP INSTRUCTIONS (shown when Firebase config is still placeholder) -->
+<div class="setup-wrap" id="setup-wrap" style="display:none">
+  <div class="setup-box">
+    <h4>⚙️ One-time Firebase setup (~5 minutes, free)</h4>
+    <p>Right now sign-ups are only visible on your device. To make the page live and shared with everyone, follow these steps:</p>
+    <ol>
+      <li>Go to <strong>console.firebase.google.com</strong> and sign in with your Google account.</li>
+      <li>Click <strong>Add project</strong>. Name it anything (e.g. "606marathon"). Skip Google Analytics. Click through to create it.</li>
+      <li>On the project dashboard, click the <strong>&lt;/&gt;</strong> (Web) icon. Name the app anything and click "Register app."</li>
+      <li>You'll see a <code>firebaseConfig</code> block with your API key and project ID. Copy the whole thing.</li>
+      <li>In the left sidebar, go to <strong>Build → Realtime Database</strong>. Click "Create database," choose the US server, and start in <strong>test mode</strong> (this allows public read/write -- fine for a personal event).</li>
+      <li>Open <code>606Marathon_HTML_v3.html</code> in any text editor. Near the top of the <code>&lt;script&gt;</code>, find <code>FIREBASE_CONFIG</code> and replace the placeholder values with your actual config.</li>
+      <li>Save, reload -- the grid will now sync live across all your friends' devices.</li>
+    </ol>
+  </div>
+</div>
+
+<footer>Jesse's B-day Marathon &nbsp;&middot;&nbsp; 6/6/26 &nbsp;&middot;&nbsp; The 606, Chicago</footer>
+
+<script type="module">
+// ── Firebase SDK ──────────────────────────────────────────────────────────────
+import { initializeApp }                             from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+// ── YOUR CONFIG GOES HERE ─────────────────────────────────────────────────────
+// Paste the firebaseConfig object from your Firebase project settings.
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAaEOgAxnu83Ji3IAjNDbLZ7qzzWfRNinA",
+  authDomain:        "birthday-marathon.firebaseapp.com",
+  databaseURL:       "https://birthday-marathon-default-rtdb.firebaseio.com",
+  projectId:         "birthday-marathon",
+  storageBucket:     "birthday-marathon.firebasestorage.app",
+  messagingSenderId: "903972144910",
+  appId:             "1:903972144910:web:1ec65887ebd9646adcf95f"
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CONFIGURED = !FIREBASE_CONFIG.apiKey.startsWith('PASTE');
+const ROOT       = '606marathon';
+
+// ── Page constants ────────────────────────────────────────────────────────────
+const COLS  = 27;
+const TOTAL = 262;   // 262 × 0.1 mi = 26.2 mi
+
+const LANDMARKS = {
+  0:  'W. Terminus',
+  11: 'California',    // 1.5 mi from east
+  16: 'Western',       // 1.0 mi from east
+  19: 'Milw./Leavitt', // 0.7 mi from east
+  21: 'Damen',         // 0.5 mi from east
+  26: 'E. Terminus'
+};
+
+const NUM_LAPS        = Math.ceil(TOTAL / COLS);         // 10
+const LAST_LAP_ACTIVE = TOTAL - (NUM_LAPS - 1) * COLS;  // 19
+
+// ── Runtime state ─────────────────────────────────────────────────────────────
+let state       = {};   // { "1": ["Jesse","Ranya"], "47": ["Alex"], ... }
+let currentUser = '';
+let gridBuilt   = false;
+let db, dbRef;
+
+// ── Segment math ──────────────────────────────────────────────────────────────
+function isWest(lap)   { return lap % 2 === 0; }
+function mileFmt(seg)  { return (seg * 0.1).toFixed(1); }
+function isFullMile(s) { return s % 10 === 0; }
+
+function segNum(lap, col) {
+  return isWest(lap)
+    ? lap * COLS + (COLS - col)
+    : lap * COLS + col + 1;
+}
+
+function lapLabel(lap) {
+  const n = Math.floor(lap / 2) + 1;
+  return `${isWest(lap) ? 'Westbound' : 'Eastbound'} Lap ${n}`;
+}
+
+function nearestLM(col) {
+  let best = 0, bd = 999;
+  Object.keys(LANDMARKS).forEach(c => {
+    const d = Math.abs(+c - col);
+    if (d < bd) { bd = d; best = c; }
+  });
+  return LANDMARKS[best];
+}
+
+// ── Storage ───────────────────────────────────────────────────────────────────
+function getRunners(seg) { return state[String(seg)] || []; }
+
+async function addRunner(seg, name) {
+  const k = String(seg);
+  // Optimistic local update for instant UI feedback
+  if (!state[k]) state[k] = [];
+  if (!state[k].includes(name)) state[k] = [...state[k], name];
+  if (!CONFIGURED) return;
+  // Atomic transaction -- safe if multiple people sign up simultaneously
+  await runTransaction(ref(db, `${ROOT}/${k}`), current => {
+    const runners = Array.isArray(current) ? current : [];
+    return runners.includes(name) ? runners : [...runners, name];
+  });
+}
+
+async function removeRunner(seg, name) {
+  const k = String(seg);
+  if (state[k]) {
+    state[k] = state[k].filter(n => n !== name);
+    if (!state[k].length) delete state[k];
+  }
+  if (!CONFIGURED) return;
+  await runTransaction(ref(db, `${ROOT}/${k}`), current => {
+    if (!Array.isArray(current)) return null;
+    const updated = current.filter(n => n !== name);
+    return updated.length ? updated : null;
+  });
+}
+
+// ── Cell class list ───────────────────────────────────────────────────────────
+function cellClasses(seg, isGhost) {
+  if (isGhost) return 'seg ghost';
+  const runners  = getRunners(seg);
+  const claimed  = runners.length > 0;
+  const mine     = claimed && currentUser && runners.includes(currentUser);
+  const fullMile = isFullMile(seg);
+  return ['seg',
+    mine                 ? 'mine'      : '',
+    claimed && !mine     ? 'claimed'   : '',
+    fullMile && !claimed ? 'full-mile' : ''
+  ].filter(Boolean).join(' ');
+}
+
+function cellTooltip(seg, lap, col) {
+  const runners = getRunners(seg);
+  const base    = `${lapLabel(lap)} · Mile ${((seg-1)*0.1).toFixed(1)}–${mileFmt(seg)}`;
+  return runners.length ? `${base} · ${runners.join(', ')}` : base;
+}
+
+// ── Build landmark strip ──────────────────────────────────────────────────────
+function buildLMStrip() {
+  const row = document.getElementById('lm-row');
+  row.innerHTML = '';
+  for (let c = 0; c < COLS; c++) {
+    const slot = document.createElement('div');
+    slot.className = 'lm-slot' + (LANDMARKS[c] != null ? ' marked' : '');
+    slot.textContent = LANDMARKS[c] || '';
+    row.appendChild(slot);
+  }
+}
+
+// ── Build grid ────────────────────────────────────────────────────────────────
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  document.getElementById('loading').style.display = 'none';
+
+  for (let lap = 0; lap < NUM_LAPS; lap++) {
+    const west = isWest(lap);
+    const lapN = Math.floor(lap / 2) + 1;
+
+    const row = document.createElement('div');
+    row.className = 'lap-row';
+    row.id = `row-${lap}`;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'row-label';
+
+    const badge = document.createElement('div');
+    badge.className = `dir-badge ${west ? 'west' : 'east'}`;
+    badge.textContent = west ? '←' : '→';
+
+    const txt = document.createElement('div');
+    txt.className = 'row-text';
+    txt.innerHTML = `<span class="dir-word">${west ? 'Westbound' : 'Eastbound'}</span>Lap ${lapN}`;
+
+    lbl.appendChild(badge);
+    lbl.appendChild(txt);
+    row.appendChild(lbl);
+
+    const segsDiv = document.createElement('div');
+    segsDiv.className = 'segs';
+
+    for (let col = 0; col < COLS; col++) {
+      const isGhost = (lap === NUM_LAPS - 1) && (col >= LAST_LAP_ACTIVE);
+      const seg     = isGhost ? -1 : segNum(lap, col);
+
+      const cell = document.createElement('div');
+      cell.className = cellClasses(seg, isGhost);
+
+      if (!isGhost) {
+        cell.id            = `seg-${seg}`;
+        cell.dataset.lap   = lap;
+        cell.dataset.col   = col;
+
+        const mileEl = document.createElement('div');
+        mileEl.className   = 'seg-mile';
+        mileEl.textContent = mileFmt(seg);
+        cell.appendChild(mileEl);
+
+        cell.title = cellTooltip(seg, lap, col);
+      }
+
+      segsDiv.appendChild(cell);
+    }
+
+    row.appendChild(segsDiv);
+    grid.appendChild(row);
+  }
+}
+
+// ── Refresh one cell (called on Firebase updates + optimistic writes) ─────────
+function refreshCell(seg) {
+  const cell = document.getElementById(`seg-${seg}`);
+  if (!cell || cell.classList.contains('ghost')) return;
+  const lap = parseInt(cell.dataset.lap);
+  const col = parseInt(cell.dataset.col);
+  cell.className = cellClasses(seg, false);
+  cell.title     = cellTooltip(seg, lap, col);
+}
+
+// ── Highlight current user's segments ─────────────────────────────────────────
+function updateHighlights(name) {
+  currentUser = (name || '').trim();
+  for (let seg = 1; seg <= TOTAL; seg++) refreshCell(seg);
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+function updateProgress() {
+  const covered = Object.values(state).filter(v => Array.isArray(v) && v.length).length;
+  const pct     = Math.round(covered / TOTAL * 100);
+  document.getElementById('prog-fill').style.width  = pct + '%';
+  document.getElementById('prog-text').textContent  =
+    `${(covered * 0.1).toFixed(1)} / 26.2 miles (${pct}%)`;
+}
+
+// ── Claim form ────────────────────────────────────────────────────────────────
+function claimRange() {
+  const start = parseFloat(document.getElementById('claim-start').value);
+  const end   = parseFloat(document.getElementById('claim-end').value);
+  if (isNaN(start) || isNaN(end)) return null;
+  return {
+    startSeg: Math.round(start / 0.1) + 1,
+    endSeg:   Math.round(end   / 0.1),
+    count:    Math.max(0, Math.round(end / 0.1) - Math.round(start / 0.1))
+  };
+}
+
+function updateClaimPreview() {
+  const preview = document.getElementById('claim-preview');
+  const start   = parseFloat(document.getElementById('claim-start').value);
+  const end     = parseFloat(document.getElementById('claim-end').value);
+
+  if (isNaN(start) || isNaN(end)) {
+    preview.textContent = 'Enter your name and a mile range above.';
+    preview.className   = 'claim-preview';
+    return;
+  }
+  if (end <= start) {
+    preview.textContent = '"To mile" must be greater than "From mile."';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  if (start < 0 || end > 26.2) {
+    preview.textContent = 'Range must be between 0.0 and 26.2.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  const r = claimRange();
+  if (!r || r.count <= 0) {
+    preview.textContent = 'No segments in that range.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  preview.textContent = `${(r.count * 0.1).toFixed(1)} miles · ${r.count} segments (mile ${start.toFixed(1)} to ${end.toFixed(1)})`;
+  preview.className   = 'claim-preview ok';
+}
+
+async function doClaimRange() {
+  const name    = document.getElementById('claim-name').value.trim();
+  const preview = document.getElementById('claim-preview');
+
+  if (!name) {
+    preview.textContent = 'Please enter your name first.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  const start = parseFloat(document.getElementById('claim-start').value);
+  const end   = parseFloat(document.getElementById('claim-end').value);
+  if (isNaN(start) || isNaN(end) || end <= start) {
+    preview.textContent = 'Please enter a valid mile range.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  const r = claimRange();
+  if (!r || r.count <= 0) {
+    preview.textContent = 'No segments in that range.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+
+  const cappedEnd = Math.min(r.endSeg, TOTAL);
+  currentUser     = name;
+
+  // Optimistic update first -- grid turns blue immediately
+  for (let seg = r.startSeg; seg <= cappedEnd; seg++) {
+    const k = String(seg);
+    if (!state[k]) state[k] = [];
+    if (!state[k].includes(name)) state[k] = [...state[k], name];
+    refreshCell(seg);
+  }
+  updateProgress();
+
+  const actualCount = cappedEnd - r.startSeg + 1;
+  preview.textContent = `✓ ${name} signed up for ${(actualCount * 0.1).toFixed(1)} miles. Your miles are in blue below.`;
+  preview.className   = 'claim-preview success';
+
+  // Write to Firebase in parallel
+  if (CONFIGURED) {
+    Promise.all(
+      Array.from({ length: actualCount }, (_, i) => r.startSeg + i).map(seg =>
+        runTransaction(ref(db, `${ROOT}/${seg}`), current => {
+          const runners = Array.isArray(current) ? current : [];
+          return runners.includes(name) ? runners : [...runners, name];
+        })
+      )
+    ).catch(() => {
+      preview.textContent = '⚠️ Saved locally but sync failed -- try signing up again.';
+      preview.className   = 'claim-preview warn';
+    });
+  }
+
+  setTimeout(() => {
+    document.getElementById('grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 400);
+}
+
+async function doRemoveRange() {
+  const name    = document.getElementById('claim-name').value.trim();
+  const preview = document.getElementById('claim-preview');
+
+  if (!name) {
+    preview.textContent = 'Please enter your name first.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  const start = parseFloat(document.getElementById('claim-start').value);
+  const end   = parseFloat(document.getElementById('claim-end').value);
+  if (isNaN(start) || isNaN(end) || end <= start) {
+    preview.textContent = 'Please enter a valid mile range.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+  const r = claimRange();
+  if (!r || r.count <= 0) {
+    preview.textContent = 'No segments in that range.';
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+
+  const cappedEnd = Math.min(r.endSeg, TOTAL);
+  let removed = 0;
+
+  for (let seg = r.startSeg; seg <= cappedEnd; seg++) {
+    const k = String(seg);
+    if (state[k] && state[k].includes(name)) {
+      state[k] = state[k].filter(n => n !== name);
+      if (!state[k].length) delete state[k];
+      removed++;
+    }
+    refreshCell(seg);
+  }
+  updateProgress();
+
+  if (removed === 0) {
+    preview.textContent = `${name} wasn't signed up for any of those miles.`;
+    preview.className   = 'claim-preview warn';
+    return;
+  }
+
+  preview.textContent = `✓ Removed ${name} from ${removed} segment${removed === 1 ? '' : 's'}.`;
+  preview.className   = 'claim-preview success';
+
+  if (CONFIGURED) {
+    Promise.all(
+      Array.from({ length: cappedEnd - r.startSeg + 1 }, (_, i) => r.startSeg + i).map(seg =>
+        runTransaction(ref(db, `${ROOT}/${seg}`), current => {
+          if (!Array.isArray(current)) return null;
+          const updated = current.filter(n => n !== name);
+          return updated.length ? updated : null;
+        })
+      )
+    ).catch(console.error);
+  }
+}
+
+// ── Expose to onclick attributes (required with type="module") ────────────────
+window.updateClaimPreview = updateClaimPreview;
+window.updateHighlights   = updateHighlights;
+window.doClaimRange       = doClaimRange;
+window.doRemoveRange      = doRemoveRange;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function setSyncStatus(mode, msg) {
+  const bar = document.getElementById('sync-bar');
+  bar.className = `sync-bar ${mode}`;
+  document.getElementById('sync-msg').textContent = msg;
+}
+
+if (CONFIGURED) {
+  const app = initializeApp(FIREBASE_CONFIG);
+  db    = getDatabase(app);
+  dbRef = ref(db, ROOT);
+
+  onValue(dbRef, snapshot => {
+    const incoming = snapshot.val() || {};
+
+    if (!gridBuilt) {
+      // First load -- build everything from scratch
+      state     = incoming;
+      gridBuilt = true;
+      buildLMStrip();
+      buildGrid();
+    } else {
+      // Subsequent updates -- only refresh cells that changed
+      const changed = new Set([...Object.keys(incoming), ...Object.keys(state)]);
+      state = incoming;
+      changed.forEach(k => {
+        const seg = parseInt(k);
+        if (seg >= 1 && seg <= TOTAL) refreshCell(seg);
+      });
+    }
+
+    updateProgress();
+    updateHighlights(currentUser);
+    setSyncStatus('ok', 'Live -- sign-ups sync across all devices');
+  }, () => {
+    setSyncStatus('warn', 'Connection error -- check your Firebase config');
+    document.getElementById('loading').textContent =
+      '⚠️ Could not connect to Firebase. Check your config and reload.';
+  });
+
+} else {
+  // Demo mode -- localStorage fallback with setup instructions
+  try {
+    const saved = JSON.parse(localStorage.getItem('606marathon_demo')) || {};
+    state = saved;
+  } catch { state = {}; }
+
+  gridBuilt = true;
+  buildLMStrip();
+  buildGrid();
+  updateProgress();
+
+  document.getElementById('setup-wrap').style.display = 'block';
+  setSyncStatus('demo', 'Demo mode — sign-ups are only saved on this device. See setup instructions below.');
+
+  // Override addRunner/removeRunner to persist locally in demo mode
+  window._demoSave = () => {
+    try { localStorage.setItem('606marathon_demo', JSON.stringify(state)); } catch {}
+  };
+}
+</script>
+</body>
+</html>
